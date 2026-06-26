@@ -1,0 +1,311 @@
+local _Players = game:GetService('Players')
+local _TweenService = game:GetService('TweenService')
+
+game:GetService('UserInputService')
+
+local _LocalPlayer = _Players.LocalPlayer
+local v4 = _LocalPlayer.Character or _LocalPlayer.CharacterAdded:Wait()
+
+_LocalPlayer:WaitForChild('PlayerGui')
+v4:WaitForChild('HumanoidRootPart')
+
+local u5 = {}
+local u6 = {
+    'Factory',
+    'BioLab',
+    'House2',
+    'Hospital3',
+    'Workplace',
+    'MilBase',
+    'Bank2',
+    'Hotel2',
+    'Mansion2',
+    'Office3',
+    'PoliceStation',
+    'ResearchFacility',
+    'Hotel',
+    'VampireCastle',
+}
+local u7 = false
+local u8 = false
+
+local function u15()
+    local _Lobby = workspace:FindFirstChild('Lobby')
+    local v10 = _Lobby and _LocalPlayer.Character and _LocalPlayer.Character:FindFirstChild('HumanoidRootPart')
+
+    if v10 then
+        local v11, v12, v13 = pairs(_Lobby:GetDescendants())
+
+        while true do
+            local v14
+
+            v13, v14 = v11(v12, v13)
+
+            if v13 == nil then
+                break
+            end
+            if v14:IsA('BasePart') and (v10.Position - v14.Position).Magnitude < 100 then
+                return true
+            end
+        end
+    end
+
+    return false
+end
+local function u16()
+    table.clear(u5)
+end
+local function u28()
+    local v17, v18, v19 = ipairs(u6)
+    local v20 = {}
+
+    while true do
+        local v21
+
+        v19, v21 = v17(v18, v19)
+
+        if v19 == nil then
+            break
+        end
+
+        local v22 = workspace:FindFirstChild(v21)
+
+        if v22 then
+            local _CoinContainer = v22:FindFirstChild('CoinContainer')
+
+            if _CoinContainer then
+                local v24, v25, v26 = ipairs(_CoinContainer:GetChildren())
+
+                while true do
+                    local v27
+
+                    v26, v27 = v24(v25, v26)
+
+                    if v26 == nil then
+                        break
+                    end
+                    if v27:FindFirstChild('CoinVisual') and not u5[v27.CoinVisual] then
+                        table.insert(v20, v27.CoinVisual)
+                    end
+                end
+            end
+        end
+    end
+
+    return v20
+end
+local function u38(p29)
+    local v30 = u28()
+    local _huge = math.huge
+    local v32, v33, v34 = ipairs(v30)
+    local v35 = nil
+
+    while true do
+        local v36
+
+        v34, v36 = v32(v33, v34)
+
+        if v34 == nil then
+            break
+        end
+        if v36 and v36.Parent then
+            local _Magnitude = (p29.Position - v36.Position).Magnitude
+
+            if _Magnitude < _huge then
+                v35 = v36
+                _huge = _Magnitude
+            end
+        end
+    end
+
+    return v35
+end
+local function u39()
+    u16()
+    wait(1)
+
+    return true
+end
+local function u44()
+    local v40, v41, v42 = pairs(game.Players.LocalPlayer.Character:GetDescendants())
+
+    while true do
+        local v43
+
+        v42, v43 = v40(v41, v42)
+
+        if v42 == nil then
+            break
+        end
+        if v43:IsA('BasePart') and v43.CanCollide == true then
+            v43.CanCollide = false
+            game.Players.LocalPlayer.Character.HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
+        end
+    end
+end
+local function u51(p45, p46)
+    if p45 and (p46 and p46.Parent) then
+        local u47 = Vector3.new(p46.Position.X, p46.Position.Y, p46.Position.Z)
+        local u48 = (p45.Position - u47).Magnitude / (18 * 1.2)
+        local v50, _ = pcall(function()
+            local v49 = _TweenService:Create(p45, TweenInfo.new(u48, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut), {
+                CFrame = CFrame.new(u47),
+            })
+
+            if not game.Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild('BodyVelocity') then
+                u7 = Instance.new('BodyVelocity', game.Players.LocalPlayer.Character.HumanoidRootPart)
+                u7.Velocity = Vector3.new(0, 0, 0)
+                u8 = game:GetService('RunService').Stepped:Connect(u44)
+
+                v49:Play()
+            end
+
+            v49.Completed:Connect(function()
+                u7:Destroy()
+                u8:Disconnect()
+            end)
+
+            if p46 and p46:FindFirstChild('TouchInterest') then
+                firetouchinterest(p45, p46, 0)
+                wait(0.1)
+                firetouchinterest(p45, p46, 1)
+            end
+        end)
+
+        if not v50 then
+            wait(0.1)
+        end
+    end
+end
+
+local u52 = false
+local u53 = nil
+local u54 = nil
+
+local function u59(p55)
+    if p55 then
+        local _HumanoidRootPart = p55:WaitForChild('HumanoidRootPart')
+        local _Humanoid = p55:WaitForChild('Humanoid')
+
+        _Humanoid.Died:Connect(function()
+            u16()
+            wait(3)
+            u39()
+        end)
+
+        while u52 do
+            if u15() then
+                wait(1)
+            elseif p55:IsDescendantOf(game.Workspace) then
+                if _Humanoid.Health > 0 then
+                    local u58 = u38(_HumanoidRootPart)
+
+                    if u58 then
+                        pcall(function()
+                            u51(_HumanoidRootPart, u58)
+
+                            u5[u58] = true
+                        end)
+                        wait(0.1)
+                    else
+                        u39()
+                        wait(1)
+                    end
+                else
+                    wait(3)
+                    u39()
+                end
+            else
+                wait(1)
+            end
+        end
+    end
+end
+local function u62()
+    if u54 then
+        u54:Disconnect()
+    end
+
+    local function v61(p60)
+        if u53 then
+            coroutine.close(u53)
+        end
+
+        u53 = coroutine.create(function()
+            u59(p60)
+        end)
+
+        coroutine.resume(u53)
+    end
+
+    u54 = _LocalPlayer.CharacterAdded:Connect(v61)
+
+    if _LocalPlayer.Character then
+        v61(_LocalPlayer.Character)
+    end
+end
+
+local u63 = false
+local _VirtualUser = game:GetService('VirtualUser')
+local u65 = nil
+
+local function u66()
+    u65 = _LocalPlayer.Idled:Connect(function()
+        _VirtualUser:CaptureController()
+        _VirtualUser:ClickButton2(Vector2.new(0, 0))
+    end)
+end
+local function u67()
+    if u65 then
+        u65:Disconnect()
+
+        u65 = nil
+    end
+end
+
+local u68 = loadstring(game:HttpGet('https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/Library.lua'))()
+local _MurderMystery2 = loadstring(Game:HttpGet('https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/wizard'))():NewWindow('Murder Mystery 2')
+local _AutoFarm = _MurderMystery2:NewSection('Auto Farm')
+
+_AutoFarm:CreateToggle('Auto Egg & Coins', function(_)
+    u52 = not u52
+
+    if u52 then
+        u62()
+    else
+        if u53 then
+            coroutine.close(u53)
+
+            u53 = nil
+        end
+        if u54 then
+            u54:Disconnect()
+
+            u54 = nil
+        end
+    end
+end)
+_AutoFarm:CreateToggle('Anti-AFK', function(_)
+    u63 = not u63
+
+    if u63 then
+        u66()
+    else
+        u67()
+    end
+end)
+
+local _byKaguyaa1 = _MurderMystery2:NewSection('by Kaguyaa1')
+
+_byKaguyaa1:CreateButton('Youtube Channel', function()
+    setclipboard('https://www.youtube.com/@KaguyaXScript')
+    u68:Notify('Copied Link...')
+end)
+_byKaguyaa1:CreateButton('Discord Server', function()
+    setclipboard('https://discord.gg/AkWWsyw2eG')
+    u68:Notify('Copied Link...')
+end)
+_byKaguyaa1:CreateButton('Telegram Channel', function()
+    setclipboard('https://t.me/KaguyaXScript')
+    u68:Notify('Copied Link...')
+end)
